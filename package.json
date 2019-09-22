@@ -2,7 +2,9 @@
   "name": "serverless-crypto-analysis",
   "description": "",
   "version": "0.1.0",
-  "dependencies": {},
+  "dependencies": {
+    "serverless": "^1.51.0"
+  },
   "devDependencies": {
     "serverless-python-requirements": "^5.0.0"
   }
