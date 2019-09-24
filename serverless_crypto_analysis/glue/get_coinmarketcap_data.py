@@ -7,15 +7,22 @@ import requests
 
 
 def get_coinmarketcap_data():
+    now = datetime.datetime.now()
+    uuid = int(time.time())
     response = query_coinmarketcap()
-    df = convert_dict_to_df(response)
-    s3_path = build_s3_full_path()
+
+    df = convert_dict_to_df(response, now, uuid)
+    s3_path = build_s3_full_path(now, uuid)
     df.to_parquet(s3_path, compression='gzip')
     return df
 
 
-def convert_dict_to_df(response):
+def convert_dict_to_df(response, now, uuid):
     df = pd.DataFrame(response)
+    df['date'] = str(now.date())
+    df['hour'] = now.hour
+    df['minute'] = now.minute
+    df['uuid'] = uuid
     df = convert_types(df)
     return df
 
@@ -32,18 +39,18 @@ def query_coinmarketcap():
     return parsed_response
 
 
-def build_s3_full_path():
-    now = datetime.datetime.now()
-    uuid = int(time.time())
-    return 's3://serverless-crypto-analysis/raw/coinmarketcap_data/date={}/hour={}/minute={}/uuid={}/{}.parquet'.format(
+def build_s3_full_path(now, uuid):
+    # return 's3://serverless-crypto-analysis/raw/coinmarketcap_data/date={}/hour={}/minute={}/uuid_string={}/{}.parquet'.format(
+    #     now.strftime("%Y"), now.strftime("%m"), now.strftime("%d"), uuid, now.isoformat())
+    return 's3://serverless-crypto-analysis/raw/coinmarketcap_data/{}/{}/{}/{}/{}.parquet'.format(
         now.strftime("%Y"), now.strftime("%m"), now.strftime("%d"), uuid, now.isoformat())
 
 
 def convert_types(df):
     print(df.columns)
-    types = [str, str, str, pd.to_numeric, pd.to_numeric, pd.to_numeric, str, \
-             pd.to_numeric, pd.to_numeric, pd.to_numeric, str, pd.to_numeric, pd.to_numeric, \
-             str, pd.to_numeric, str, pd.to_numeric, pd.to_numeric, pd.to_numeric]
+    types = [pd.to_numeric, pd.to_numeric, str, pd.to_numeric, pd.to_numeric, pd.to_numeric, str, \
+             pd.to_numeric, pd.to_numeric, pd.to_numeric, pd.to_numeric, pd.to_numeric, pd.to_numeric, \
+             str, pd.to_numeric, pd.to_datetime, pd.to_numeric, pd.to_numeric, pd.to_numeric]
     df_updated = pd.DataFrame()
     column_type_mapping = zip(types, df.columns)
     for type_func, column in column_type_mapping:
@@ -56,4 +63,4 @@ def convert_types(df):
 
 
 if __name__ == '__main__':
-    get_data()
+    get_coinmarketcap_data()

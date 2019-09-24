@@ -5,40 +5,69 @@ provider:
   name: aws
   runtime: python3.6
   region: eu-central-1
+  stage: ${opt:stage, "dev"}
 
 package:
-  individually: true
-  excludeDevDependencies: false
+  excludeDevDependencies: true
   exclude:
     - "*/**"
 
-resources:
-  Resources:
-    GlueJob:
-      Type: AWS::Glue::Job
-      Properties: 
-        Role: ${self:custom.glue_role}
-        Command:   
-          Name: pythonshell  
-          ScriptLocation: ${self:custom.glue_job_script_location}
-        Name: ${self:custom.glue_job}
-#
-#custom:
-#  pythonRequirements:
-#    dockerizePip: non-linux
+custom:
+  unique_stack_name: ${self:service}
+  bucket_glue: ${self:custom.unique_stack_name}-glue
+  bucket_data: ${self:custom.unique_stack_name}
+
+  lambda_get_coinmarketcap_data: get_coinmarketcap_data
+  glue_get_coinmarketcap_data: get_coinmarketcap_data
+  glue_get_coinmarketcap_data_script: s3://${self:custom.bucket_glue}/get_coinmarketcap_data.py
+  glue_get_coinmarketcap_data_libs: s3://${self:custom.bucket_glue}/libs
+
+  s3Sync:
+    - bucketName: ${self:custom.bucket_glue}
+      localDir:  serverless_crypto_analysis/glue
+
+
+plugins:
+  - serverless-s3-remover
+  - serverless-s3-sync
 
 # functions:
 #   get_coinmarketcap_data:
-#     handler: serverless_crypto_analysis/get_coinmarketcap_data.handler
-#     layers:
-#       - arn:aws:lambda:eu-central-1:077590795309:layer:fastparquet:3
-#layers:
-#  GetCoinmarketcapData:
-#    path: /Users/vincent/.local/share/virtualenvs/serverless_crypto_analysis-yCVEiR5j/lib/python3.6/site-packages/ # required, path to layer contents on disk
-#    name: ${self:provider.stage}-${self:service} # optional, Deployed Lambda layer name
-#    description: Description of what the lambda layer does # optional, Description to publish to AWS
-#    compatibleRuntimes: # optional, a list of runtimes this layer is compatible with
-#      - python3.6
-#    retain: false # optional, false by default. If true, layer versions are not deleted as new ones are created
+#     handler: serverless_crypto_analysis/lambda_function/get_coinmarketcap_data.handler
+#     events:
+#       # Invoke Lambda function every minute
+#       - schedule: rate(1 hour)
+#     envrionment:
+#       BUCKET: ${self:custom.bucket_data}
+#       KEY: raw
 
+resources:
+  Resources:
+    S3GlueBucket:
+      Type: AWS::S3::Bucket
+      Properties:
+        BucketName: ${self:custom.bucket_glue}
+    S3DataBucket:
+      Type: AWS::S3::Bucket
+      Properties:
+        BucketName: ${self:custom.bucket_data}
+    GlueJobGetCoinmarketcap:
+      Type: AWS::Glue::Job
+      Properties: 
+        Role: arn:aws:iam::077590795309:role/glue-admin
+        Command:   
+          Name: pythonshell
+          PythonVersion: 3
+          ScriptLocation: ${self:custom.glue_get_coinmarketcap_data_script}
+        Name: ${self:custom.glue_get_coinmarketcap_data}
+        DefaultArguments:
+          --extra-py-files: ${self:custom.glue_get_coinmarketcap_data_libs}/pyarrow-0.14.1-cp36-cp36m-manylinux1_x86_64.whl,${self:custom.glue_get_coinmarketcap_data_libs}/requests-2.22.0-py2.py3-none-any.whl,${self:custom.glue_get_coinmarketcap_data_libs}/s3fs-0.3.4-py3-none-any.whl
+    GlueSchedulerGetCoinmarketcap:
+      Type: AWS::Glue::Trigger
+      Properties:
+        Type: SCHEDULED
+        Schedule: cron(0 * * * ?)        
+        Actions:
+          - JobName: ${self:custom.glue_get_coinmarketcap_data}
+        Name: ${self:custom.glue_get_coinmarketcap_data}
 
