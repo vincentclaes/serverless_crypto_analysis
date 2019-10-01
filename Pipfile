@@ -8,6 +8,8 @@ s3fs = "==0.3.4"
 fastparquet = "==0.3.2"
 pandas = "*"
 boto3 = "*"
+nose = "*"
+pytest = "*"
 
 [packages]
 requests = "==2.22.0"

@@ -1,3 +1,13 @@
 {
-    "python.pythonPath": "/Users/vincent/.local/share/virtualenvs/serverless_crypto_analysis-yCVEiR5j/bin/python"
+    "python.pythonPath": "/Users/vincent/.local/share/virtualenvs/serverless_crypto_analysis-yCVEiR5j/bin/python",
+    "python.testing.unittestArgs": [
+        "-v",
+        "-s",
+        ".",
+        "-p",
+        "*test*.py"
+    ],
+    "python.testing.pytestEnabled": false,
+    "python.testing.nosetestsEnabled": false,
+    "python.testing.unittestEnabled": true
 }
