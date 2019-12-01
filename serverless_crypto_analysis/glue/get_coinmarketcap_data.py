@@ -12,7 +12,7 @@ def get_coinmarketcap_data():
     response = query_coinmarketcap()
 
     df = convert_dict_to_df(response, now, uuid)
-    s3_path = build_s3_full_path(now, uuid)
+    s3_path = build_s3_full_path(now)
     df.to_parquet(s3_path, compression='gzip')
     return df
 
@@ -39,11 +39,8 @@ def query_coinmarketcap():
     return parsed_response
 
 
-def build_s3_full_path(now, uuid):
-    # return 's3://serverless-crypto-analysis/raw/coinmarketcap_data/date={}/hour={}/minute={}/uuid_string={}/{}.parquet'.format(
-    #     now.strftime("%Y"), now.strftime("%m"), now.strftime("%d"), uuid, now.isoformat())
-    return 's3://serverless-crypto-analysis/raw/coinmarketcap_data/{}/{}/{}/{}/{}.parquet'.format(
-        now.strftime("%Y"), now.strftime("%m"), now.strftime("%d"), uuid, now.isoformat())
+def build_s3_full_path(now):
+    return 's3://serverless-crypto-analysis-stg/raw/coinmarketcap_data/{}.parquet'.format(now.isoformat())
 
 
 def convert_types(df):

@@ -13,7 +13,7 @@ package:
     - "*/**"
 
 custom:
-  unique_stack_name: ${self:service}
+  unique_stack_name: ${self:service}-${self:provider.stage}
   bucket_glue: ${self:custom.unique_stack_name}-glue
   bucket_data: ${self:custom.unique_stack_name}
 
@@ -21,10 +21,10 @@ custom:
 
   bucket_glue_url: s3://${self:custom.bucket_glue}
   
-  glue_get_coinmarketcap_data: get_coinmarketcap_data
+  glue_get_coinmarketcap_data:  ${self:custom.unique_stack_name}-get_coinmarketcap_data
   glue_get_coinmarketcap_data_script: ${self:custom.bucket_glue_url}/get_coinmarketcap_data.py
   
-  glue_newcomers: newcomers
+  glue_newcomers: ${self:custom.unique_stack_name}-newcomers
   glue_newcomers_script: ${self:custom.bucket_glue_url}/newcomers.py
   glue_get_coinmarketcap_data_libs: ${self:custom.bucket_glue_url}/libs
 
@@ -37,15 +37,6 @@ plugins:
   - serverless-s3-remover
   - serverless-s3-sync
 
-# functions:
-#   newcomers:
-#     handler: serverless_crypto_analysis/lambda_function/newcomers.handler
-#     events:
-#       # Invoke Lambda function every minute
-#       - schedule: rate(1 hour)
-#     envrionment:
-#       BUCKET: ${self:custom.bucket_data}
-#       KEY: stg/newcomers
 
 resources:
   Resources:
@@ -57,7 +48,7 @@ resources:
       Type: AWS::S3::Bucket
       Properties:
         BucketName: ${self:custom.bucket_data}
-    GlueJobGetCoinmarketcap:
+    GlueJobGetCoinmarketcapData:
       Type: AWS::Glue::Job
       Properties: 
         Role: ${self:custom.glue_role}
@@ -68,7 +59,7 @@ resources:
         Name: ${self:custom.glue_get_coinmarketcap_data}
         DefaultArguments:
           --extra-py-files: ${self:custom.glue_get_coinmarketcap_data_libs}/pyarrow-0.14.1-cp36-cp36m-manylinux1_x86_64.whl,${self:custom.glue_get_coinmarketcap_data_libs}/requests-2.22.0-py2.py3-none-any.whl,${self:custom.glue_get_coinmarketcap_data_libs}/s3fs-0.3.4-py3-none-any.whl
-    GlueSchedulerGetCoinmarketcap:
+    GlueTriggerGetCoinmarketcapData:
       Type: AWS::Glue::Trigger
       Properties:
         Type: SCHEDULED
@@ -86,5 +77,73 @@ resources:
           ScriptLocation: ${self:custom.glue_newcomers_script}
         Name: ${self:custom.glue_newcomers}
         DefaultArguments:
-          --extra-py-files: ${self:custom.glue_get_coinmarketcap_data_libs}/pyarrow-0.14.1-cp36-cp36m-manylinux1_x86_64.whl,${self:custom.glue_get_coinmarketcap_data_libs}/requests-2.22.0-py2.py3-none-any.whl,${self:custom.glue_get_coinmarketcap_data_libs}/s3fs-0.3.4-py3-none-any.whl
- 
+          --extra-py-files: ${self:custom.glue_get_coinmarketcap_data_libs}/pyarrow-0.14.1-cp36-cp36m-manylinux1_x86_64.whl,${self:custom.glue_get_coinmarketcap_data_libs}/requests-2.22.0-py2.py3-none-any.whl,${self:custom.glue_get_coinmarketcap_data_libs}/s3fs-0.3.5-py3-none-any.whl
+        ExecutionProperty:
+          MaxConcurrentRuns: 4
+    GlueTriggerNewcomers100:
+      Type: AWS::Glue::Trigger
+      Properties:
+        Type: CONDITIONAL
+        Actions:
+          - JobName: !Ref GlueJobNewcomers
+            Arguments:
+              --bucket: ${self:custom.bucket_data}
+              --source_key: raw/coinmarketcap_data
+              --dest_key_json: stg/newcomers/top_100/json
+              --dest_key_parquet: stg/newcomers/top_100/parquet
+              --rank: 100
+        Name: ${self:custom.glue_newcomers}-100
+        Predicate:
+          Conditions:
+            - LogicalOperator: EQUALS
+              JobName: !Ref GlueJobGetCoinmarketcapData
+              State: SUCCEEDED
+    GlueTriggerNewcomersOnDemand:
+      Type: AWS::Glue::Trigger
+      Properties:
+        Type: ON_DEMAND
+        Actions:
+          - JobName: !Ref GlueJobNewcomers
+            Arguments:
+              --bucket: ${self:custom.bucket_data}
+              --source_key: raw/coinmarketcap_data
+              --dest_key_json: stg/newcomers/top_100/json
+              --dest_key_parquet: stg/newcomers/top_100/parquet
+              --rank: 100
+        Name: ${self:custom.glue_newcomers}-100-on-demand
+    GlueTriggerNewcomers200:
+      Type: AWS::Glue::Trigger
+      Properties:
+        Type: CONDITIONAL
+        Actions:
+          - JobName: !Ref GlueJobNewcomers
+            Arguments:
+              --bucket: ${self:custom.bucket_data}
+              --source_key: raw/coinmarketcap_data
+              --dest_key_json: stg/newcomers/top_200/json
+              --dest_key_parquet: stg/newcomers/top_200/parquet
+              --rank: 200
+        Name: ${self:custom.glue_newcomers}-200
+        Predicate:
+          Conditions:
+            - LogicalOperator: EQUALS
+              JobName: !Ref GlueJobGetCoinmarketcapData
+              State: SUCCEEDED
+    GlueTriggerNewcomers50:
+      Type: AWS::Glue::Trigger
+      Properties:
+        Type: CONDITIONAL
+        Actions:
+          - JobName: !Ref GlueJobNewcomers
+            Arguments:
+              --bucket: ${self:custom.bucket_data}
+              --source_key: raw/coinmarketcap_data
+              --dest_key_json: stg/newcomers/top_50/json
+              --dest_key_parquet: stg/newcomers/top_50/parquet
+              --rank: 50
+        Name: ${self:custom.glue_newcomers}-50
+        Predicate:
+          Conditions:
+            - LogicalOperator: EQUALS
+              JobName: !Ref GlueJobGetCoinmarketcapData
+              State: SUCCEEDED
