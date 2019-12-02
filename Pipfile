@@ -10,12 +10,14 @@ pandas = "*"
 boto3 = "*"
 nose = "*"
 pytest = "*"
-
-[packages]
-requests = "==2.22.0"
-boto3 = "*"
 pyathena = "*"
 pyarrow = "*"
+requests = "==2.22.0"
+
+[packages]
+boto3 = "*"
+retrying = "*"
+
 
 [requires]
 python_version = "3.6"

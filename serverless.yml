@@ -9,8 +9,11 @@ provider:
 
 package:
   excludeDevDependencies: true
+#  exclude:
+#    - "*/**"
   exclude:
-    - "*/**"
+    - 'node_modules/**'
+    - 'serverless_crypto_analysis_tests/**'
 
 custom:
   unique_stack_name: ${self:service}-${self:provider.stage}
@@ -36,6 +39,11 @@ custom:
 plugins:
   - serverless-s3-remover
   - serverless-s3-sync
+  - serverless-python-requirements
+
+functions:
+  newcomers:
+    handler: serverless_crypto_analysis/lambda_function/newcomers.lambda_handler
 
 
 resources:
