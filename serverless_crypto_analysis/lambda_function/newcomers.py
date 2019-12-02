@@ -1,22 +1,3 @@
-def lambda_handler(event, context):
-        # SQL Query to execute
-
-    query = ("""SELECT max(uuid) FROM coinmarketcap_coinmarketcap_data""")
-    print("Executing query: {}".format(query))
-    result = run_query(query, "coinmarketcap", "s3://aws-athena-query-results-077590795309-eu-central-1")
-    print("result: {}".format(result))
-
-#!/usr/bin/env python3
-#
-# Query AWS Athena using SQL
-# Copyright (c) Alexey Baikov <sysboss[at]mail.ru>
-#
-# This snippet is a basic example to query Athen and load the results
-# to a variable.
-#
-# Requirements:
-# > pip3 install boto3 botocore retrying
-
 import csv
 import os
 
@@ -25,22 +6,26 @@ import botocore
 
 from retrying import retry
 
-# configuration
-# s3_bucket = 'aws-athena-query-results-077590795309-eu-central-1'       # S3 Bucket name
-# s3_ouput  = 's3://'+ s3_bucket   # S3 Bucket to store results
-# database  = 'coinmarketcap'  # The database to which the query belongs
-
 # init clients
 athena = boto3.client('athena')
 s3 = boto3.resource('s3')
 s3_client = boto3.client('s3')
 
-@retry(stop_max_attempt_number = 10,
-    wait_exponential_multiplier = 300,
-    wait_exponential_max = 1 * 60 * 1000)
+
+def lambda_handler(event, context):
+    query = ("""SELECT max(uuid) FROM coinmarketcap_coinmarketcap_data""")
+    print("Executing query: {}".format(query))
+    result = run_query(query, "coinmarketcap", "s3://aws-athena-query-results-077590795309-eu-central-1",
+                       "aws-athena-query-results-077590795309-eu-central-1")
+    print("result: {}".format(result))
+
+
+@retry(stop_max_attempt_number=10,
+       wait_exponential_multiplier=300,
+       wait_exponential_max=1 * 60 * 1000)
 def poll_status(_id):
-    result = athena.get_query_execution( QueryExecutionId = _id )
-    state  = result['QueryExecution']['Status']['State']
+    result = athena.get_query_execution(QueryExecutionId=_id)
+    state = result['QueryExecution']['Status']['State']
 
     if state == 'SUCCEEDED':
         return result
@@ -49,7 +34,8 @@ def poll_status(_id):
     else:
         raise Exception
 
-def run_query(query, database, s3_output):
+
+def run_query(query, database, s3_output, output_bucket):
     response = athena.start_query_execution(
         QueryString=query,
         QueryExecutionContext={
@@ -57,7 +43,7 @@ def run_query(query, database, s3_output):
         },
         ResultConfiguration={
             'OutputLocation': s3_output,
-    })
+        })
 
     QueryExecutionId = response['QueryExecutionId']
     result = poll_status(QueryExecutionId)
@@ -70,7 +56,7 @@ def run_query(query, database, s3_output):
 
         # download result file
         try:
-            response = s3_client.get_object(Bucket=s3_output, Key=s3_key)
+            response = s3_client.get_object(Bucket=output_bucket, Key=s3_key)
             lines = response['Body'].read().decode('utf-8').split()
 
         except botocore.exceptions.ClientError as e:
@@ -90,9 +76,3 @@ def run_query(query, database, s3_output):
             os.remove(local_filename)
 
         return rows
-
-# if __name__ == '__main__':
-
-
-#     print("Results:")
-#     print(result)
