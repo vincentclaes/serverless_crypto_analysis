@@ -13,11 +13,50 @@ s3_client = boto3.client('s3')
 
 
 def lambda_handler(event, context):
-    query = ("""SELECT max(uuid) FROM coinmarketcap_coinmarketcap_data""")
-    print("Executing query: {}".format(query))
-    result = run_query(query, "coinmarketcap", "s3://aws-athena-query-results-077590795309-eu-central-1",
-                       "aws-athena-query-results-077590795309-eu-central-1")
-    print("result: {}".format(result))
+    max_uuid = get_max_uuid()
+    latest_results = get_latest_result(max_uuid)
+    tail_results = get_tail_results()
+    newcomers = get_newcomers(latest_results, tail_results)
+    return newcomers
+
+
+def get_newcomers(latest_results, tail_results):
+    ret_val = []
+    tail_results = set(tail_results)
+    for latest_element in latest_results:
+        newcomer = latest_element not in tail_results
+        if newcomer:
+            ret_val.append(latest_element)
+    return ret_val
+
+
+def get_max_uuid():
+    result = run_query("""SELECT max(uuid) FROM coinmarketcap_coinmarketcap_data""")
+    max_uuid = result[0]["_col0"]
+    return max_uuid
+
+
+def get_latest_result(max_uuid):
+    results = run_query(
+        """select id from "coinmarketcap"."coinmarketcap_coinmarketcap_data" where uuid={};""".format(max_uuid))
+    latest_results = get_ids_from_results(results)
+    return latest_results
+
+
+def get_tail_results():
+    results = run_query(
+        """select distinct id from "coinmarketcap"."coinmarketcap_coinmarketcap_data" where uuid<1575223248 and rank <= 100;""")
+    tail_results = get_ids_from_results(results)
+    return tail_results
+
+
+def get_ids_from_results(results):
+    return [result.get('id') for result in results]
+
+
+def run_query(query):
+    _run_query(query, "coinmarketcap", "s3://aws-athena-query-results-077590795309-eu-central-1",
+               "aws-athena-query-results-077590795309-eu-central-1")
 
 
 @retry(stop_max_attempt_number=10,
@@ -35,7 +74,8 @@ def poll_status(_id):
         raise Exception
 
 
-def run_query(query, database, s3_output, output_bucket):
+def _run_query(query, database, s3_output, output_bucket):
+    print("Executing query: {}".format(query))
     response = athena.start_query_execution(
         QueryString=query,
         QueryExecutionContext={
@@ -75,4 +115,5 @@ def run_query(query, database, s3_output, output_bucket):
         if os.path.isfile(local_filename):
             os.remove(local_filename)
 
+        print("result: {}".format(rows))
         return rows
