@@ -23,6 +23,8 @@ class TestNewcomers(unittest.TestCase):
         return boto3.client("s3").list_objects_v2(
             Bucket=bucket)['Contents']
 
+
+
     @mock_s3
     @patch('serverless_crypto_analysis.glue.newcomers.dump_df_to_s3_as_parquet')
     @patch('serverless_crypto_analysis.glue.newcomers.read_data_source')

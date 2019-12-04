@@ -1,8 +1,9 @@
 import csv
 import os
-
+import json
 import boto3
 import botocore
+import datetime
 
 from retrying import retry
 
@@ -13,11 +14,27 @@ s3_client = boto3.client('s3')
 
 
 def lambda_handler(event, context):
+    athena_db = os.environ["ATHENA_DB"]
+    athena_table = os.environ["ATHENA_TABLE"]
+    bucket_data = os.environ["BUCKET_DATA"]
+    key_data = os.environ["KEY_DATA"]
+    rank = os.environ["RANK"]
+
     max_uuid = get_max_uuid()
-    latest_results = get_latest_result(max_uuid)
-    tail_results = get_tail_results()
+    latest_results = get_latest_result(athena_db, athena_table, max_uuid)
+    tail_results = get_tail_results(athena_db, athena_table, rank)
     newcomers = get_newcomers(latest_results, tail_results)
+    dump_newcomers(newcomers, bucket_data, key_data)
     return newcomers
+
+
+def dump_newcomers(newcomers, bucket, dest_key):
+    date_time = datetime.datetime.utcnow().isoformat()
+    for newcomer in newcomers:
+        full_dest_key = os.path.join(dest_key, date_time + '-' + newcomer + ".json")
+        boto3.client('s3').put_object(Body=newcomer,
+                                      Bucket=bucket,
+                                      Key=full_dest_key)
 
 
 def get_newcomers(latest_results, tail_results):
@@ -30,22 +47,22 @@ def get_newcomers(latest_results, tail_results):
     return ret_val
 
 
-def get_max_uuid():
-    result = run_query("""SELECT max(uuid) FROM coinmarketcap_coinmarketcap_data""")
+def get_max_uuid(athena_db, athena_table):
+    result = run_query("""SELECT max(uuid) FROM "{}"."{}";""".format(athena_db, athena_table))
     max_uuid = result[0]["_col0"]
     return max_uuid
 
 
-def get_latest_result(max_uuid):
+def get_latest_result(athena_db, athena_table, max_uuid):
     results = run_query(
-        """select id from "coinmarketcap"."coinmarketcap_coinmarketcap_data" where uuid={};""".format(max_uuid))
+        """select id from "{}"."{}" where uuid={};""".format(athena_db, athena_table, max_uuid))
     latest_results = get_ids_from_results(results)
     return latest_results
 
 
-def get_tail_results():
+def get_tail_results(athena_db, athena_table, rank):
     results = run_query(
-        """select distinct id from "coinmarketcap"."coinmarketcap_coinmarketcap_data" where uuid<1575223248 and rank <= 100;""")
+        """select distinct id from "{}"."{}" where uuid<1575223248 and rank <= {};""".format(athena_db, athena_table, rank))
     tail_results = get_ids_from_results(results)
     return tail_results
 
