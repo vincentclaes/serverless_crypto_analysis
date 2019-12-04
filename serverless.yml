@@ -44,7 +44,21 @@ plugins:
 functions:
   newcomers:
     handler: serverless_crypto_analysis/lambda_function/newcomers.lambda_handler
-
+    events:
+      - s3:
+          bucket: ${self:custom.bucket_data}
+          event: s3:ObjectCreated:*
+          rules:
+            - prefix: raw/coinmarketcap_data
+            - suffix: .parquet
+    # you can specify environment variables specifically for this lambda function
+    environment:
+        ATHENA_DB: coinmarketcap
+        ATHENA_TABLE: coinmarketcap_data
+        BUCKET_DATA: serverless-crypto-analysis-stg
+        KEY_DATA: stg/newcomers
+        RANK: [200, 100, 75, 50, 40, 30, 20, 10, 5]
+    timeout: 900
 
 resources:
   Resources:

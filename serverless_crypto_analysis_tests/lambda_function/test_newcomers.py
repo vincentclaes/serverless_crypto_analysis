@@ -58,7 +58,7 @@ class TestNewcomers(unittest.TestCase):
         os.environ["ATHENA_TABLE"] = "table"
         os.environ["BUCKET_DATA"] = bucket
         os.environ["KEY_DATA"] = "stg/newcomers"
-        os.environ["RANK"] = "100"
+        os.environ["RANK"] = '["100", "200"]'
 
         self.create_bucket(bucket)
         m_max_uuid.return_value = "max_uuid"

@@ -18,20 +18,33 @@ def lambda_handler(event, context):
     athena_table = os.environ["ATHENA_TABLE"]
     bucket_data = os.environ["BUCKET_DATA"]
     key_data = os.environ["KEY_DATA"]
-    rank = os.environ["RANK"]
-
+    rank_list = json.loads(os.environ["RANK"])
     max_uuid = get_max_uuid()
     latest_results = get_latest_result(athena_db, athena_table, max_uuid)
+    ret_val = {}
+    for rank in rank_list:
+        print("running for rank : {}".format(rank))
+        newcomers = get_newcomers_for_rank(
+            athena_db, athena_table, bucket_data, key_data, latest_results, rank
+        )
+        ret_val[rank] = newcomers
+    return ret_val
+
+
+def get_newcomers_for_rank(
+    athena_db, athena_table, bucket_data, key_data, latest_results, rank
+):
     tail_results = get_tail_results(athena_db, athena_table, rank)
     newcomers = get_newcomers(latest_results, tail_results)
-    dump_newcomers(newcomers, bucket_data, key_data)
-    return newcomers
+    dump_newcomers(newcomers, bucket_data, key_data, rank)
 
 
-def dump_newcomers(newcomers, bucket, dest_key):
+def dump_newcomers(newcomers, bucket, dest_key, rank):
     date_time = datetime.datetime.utcnow().isoformat()
     for newcomer in newcomers:
-        full_dest_key = os.path.join(dest_key, date_time + "-" + newcomer + ".json")
+        full_dest_key = os.path.join(
+            dest_key, "rank={}".format(rank), date_time + "-" + newcomer + ".json"
+        )
         boto3.client("s3").put_object(Body=newcomer, Bucket=bucket, Key=full_dest_key)
 
 
