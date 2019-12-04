@@ -57,7 +57,7 @@ functions:
         ATHENA_TABLE: coinmarketcap_data
         BUCKET_DATA: serverless-crypto-analysis-stg
         KEY_DATA: stg/newcomers
-        RANK: [200, 100, 75, 50, 40, 30, 20, 10, 5]
+        RANK: "[200,100,75,50,40,30,20,10,5]"
     timeout: 900
 
 resources:
