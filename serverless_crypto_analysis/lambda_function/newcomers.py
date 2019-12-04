@@ -8,9 +8,9 @@ import datetime
 from retrying import retry
 
 # init clients
-athena = boto3.client('athena')
-s3 = boto3.resource('s3')
-s3_client = boto3.client('s3')
+athena = boto3.client("athena")
+s3 = boto3.resource("s3")
+s3_client = boto3.client("s3")
 
 
 def lambda_handler(event, context):
@@ -31,10 +31,8 @@ def lambda_handler(event, context):
 def dump_newcomers(newcomers, bucket, dest_key):
     date_time = datetime.datetime.utcnow().isoformat()
     for newcomer in newcomers:
-        full_dest_key = os.path.join(dest_key, date_time + '-' + newcomer + ".json")
-        boto3.client('s3').put_object(Body=newcomer,
-                                      Bucket=bucket,
-                                      Key=full_dest_key)
+        full_dest_key = os.path.join(dest_key, date_time + "-" + newcomer + ".json")
+        boto3.client("s3").put_object(Body=newcomer, Bucket=bucket, Key=full_dest_key)
 
 
 def get_newcomers(latest_results, tail_results):
@@ -48,44 +46,58 @@ def get_newcomers(latest_results, tail_results):
 
 
 def get_max_uuid(athena_db, athena_table):
-    result = run_query("""SELECT max(uuid) FROM "{}"."{}";""".format(athena_db, athena_table))
+    result = run_query(
+        """SELECT max(uuid) FROM "{}"."{}";""".format(athena_db, athena_table)
+    )
     max_uuid = result[0]["_col0"]
     return max_uuid
 
 
 def get_latest_result(athena_db, athena_table, max_uuid):
     results = run_query(
-        """select id from "{}"."{}" where uuid={};""".format(athena_db, athena_table, max_uuid))
+        """select id from "{}"."{}" where uuid={};""".format(
+            athena_db, athena_table, max_uuid
+        )
+    )
     latest_results = get_ids_from_results(results)
     return latest_results
 
 
 def get_tail_results(athena_db, athena_table, rank):
     results = run_query(
-        """select distinct id from "{}"."{}" where uuid<1575223248 and rank <= {};""".format(athena_db, athena_table, rank))
+        """select distinct id from "{}"."{}" where uuid<1575223248 and rank <= {};""".format(
+            athena_db, athena_table, rank
+        )
+    )
     tail_results = get_ids_from_results(results)
     return tail_results
 
 
 def get_ids_from_results(results):
-    return [result.get('id') for result in results]
+    return [result.get("id") for result in results]
 
 
 def run_query(query):
-    _run_query(query, "coinmarketcap", "s3://aws-athena-query-results-077590795309-eu-central-1",
-               "aws-athena-query-results-077590795309-eu-central-1")
+    _run_query(
+        query,
+        "coinmarketcap",
+        "s3://aws-athena-query-results-077590795309-eu-central-1",
+        "aws-athena-query-results-077590795309-eu-central-1",
+    )
 
 
-@retry(stop_max_attempt_number=10,
-       wait_exponential_multiplier=300,
-       wait_exponential_max=1 * 60 * 1000)
+@retry(
+    stop_max_attempt_number=10,
+    wait_exponential_multiplier=300,
+    wait_exponential_max=1 * 60 * 1000,
+)
 def poll_status(_id):
     result = athena.get_query_execution(QueryExecutionId=_id)
-    state = result['QueryExecution']['Status']['State']
+    state = result["QueryExecution"]["Status"]["State"]
 
-    if state == 'SUCCEEDED':
+    if state == "SUCCEEDED":
         return result
-    elif state == 'FAILED':
+    elif state == "FAILED":
         return result
     else:
         raise Exception
@@ -95,29 +107,26 @@ def _run_query(query, database, s3_output, output_bucket):
     print("Executing query: {}".format(query))
     response = athena.start_query_execution(
         QueryString=query,
-        QueryExecutionContext={
-            'Database': database
-        },
-        ResultConfiguration={
-            'OutputLocation': s3_output,
-        })
+        QueryExecutionContext={"Database": database},
+        ResultConfiguration={"OutputLocation": s3_output,},
+    )
 
-    QueryExecutionId = response['QueryExecutionId']
+    QueryExecutionId = response["QueryExecutionId"]
     result = poll_status(QueryExecutionId)
 
-    if result['QueryExecution']['Status']['State'] == 'SUCCEEDED':
+    if result["QueryExecution"]["Status"]["State"] == "SUCCEEDED":
         print("Query SUCCEEDED: {}".format(QueryExecutionId))
 
-        s3_key = QueryExecutionId + '.csv'
-        local_filename = QueryExecutionId + '.csv'
+        s3_key = QueryExecutionId + ".csv"
+        local_filename = QueryExecutionId + ".csv"
 
         # download result file
         try:
             response = s3_client.get_object(Bucket=output_bucket, Key=s3_key)
-            lines = response['Body'].read().decode('utf-8').split()
+            lines = response["Body"].read().decode("utf-8").split()
 
         except botocore.exceptions.ClientError as e:
-            if e.response['Error']['Code'] == "404":
+            if e.response["Error"]["Code"] == "404":
                 print("The object does not exist.")
             else:
                 raise
