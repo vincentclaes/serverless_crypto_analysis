@@ -4,15 +4,19 @@ import datetime
 
 import pandas as pd
 import requests
+import logging
+import argparse
+import os
 
 
-def get_coinmarketcap_data():
+def get_coinmarketcap_data(bucket, key):
     now = datetime.datetime.now()
     uuid = int(time.time())
+    logging.info("uuid {}".format(uuid))
     response = query_coinmarketcap()
 
     df = convert_dict_to_df(response, now, uuid)
-    s3_path = build_s3_full_path(now)
+    s3_path = build_s3_full_path(now, bucket, key)
     df.to_parquet(s3_path, compression="gzip")
     return df
 
@@ -39,10 +43,10 @@ def query_coinmarketcap():
     return parsed_response
 
 
-def build_s3_full_path(now):
-    return "s3://serverless-crypto-analysis-stg/raw/coinmarketcap_data/{}.parquet".format(
-        now.isoformat()
-    )
+def build_s3_full_path(now, bucket, key):
+    full_key = os.path.join(bucket, key, now.isoformat() + ".parquet")
+    logging.info("key to dump {}".format(full_key))
+    return "s3://{}".format(full_key)
 
 
 def convert_types(df):
@@ -80,4 +84,11 @@ def convert_types(df):
 
 
 if __name__ == "__main__":
-    get_coinmarketcap_data()
+    logging.basicConfig(level=logging.DEBUG)
+    parser = argparse.ArgumentParser()
+    parser.add_argument("--bucket", type=str, required=True)
+    parser.add_argument("--key", type=str, required=True)
+
+    args, unknown = parser.parse_known_args()
+    logging.warning("unknown args found : {}".format(unknown))
+    get_coinmarketcap_data(args.bucket, args.key)

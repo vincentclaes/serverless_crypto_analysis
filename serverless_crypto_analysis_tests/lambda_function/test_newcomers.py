@@ -35,7 +35,7 @@ class TestNewcomers(unittest.TestCase):
             OrderedDict([("id", "ethereum")]),
             OrderedDict([("id", "ripple")]),
         ]
-        result = newcomers.get_latest_result("db", "table", "max_uuid")
+        result = newcomers.get_latest_result("db", "table", "max_uuid", "100")
         self.assertListEqual(result, ["bitcoin", "ethereum", "ripple"])
 
     @patch("serverless_crypto_analysis.lambda_function.newcomers.run_query")
@@ -45,7 +45,7 @@ class TestNewcomers(unittest.TestCase):
             OrderedDict([("id", "ethereum")]),
             OrderedDict([("id", "ripple")]),
         ]
-        result = newcomers.get_tail_results("db", "table", "100")
+        result = newcomers.get_tail_results("db", "table", "38484892", "100")
         self.assertListEqual(result, ["iota", "ethereum", "ripple"])
 
     @mock_s3
