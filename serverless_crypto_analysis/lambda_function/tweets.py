@@ -2,7 +2,7 @@ import json
 import logging
 import os
 import random
-
+import urllib
 import boto3
 import requests
 from bs4 import BeautifulSoup
@@ -97,7 +97,8 @@ def get_bucket_from_event(event):
 
 
 def get_rank_from_s3_key(key):
-    rank = int(key.split("/")[-2].split("=")[1])
+    key_ = urllib.parse.unquote_plus(key, encoding="utf-8")
+    rank = int(key_.split("/")[-2].split("=")[1])
     print("rank: {}".format(rank))
     return rank
 
