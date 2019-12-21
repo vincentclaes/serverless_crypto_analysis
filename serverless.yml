@@ -21,6 +21,7 @@ custom:
   bucket_glue: ${self:custom.unique_stack_name}-glue
   bucket_data: ${self:custom.unique_stack_name}
   key_raw_coinmarketcap: raw/coinmarketcap_data
+  key_stg_newcomers: stg/newcomers
   glue_role: arn:aws:iam::077590795309:role/glue-admin
 
   bucket_glue_url: s3://${self:custom.bucket_glue}
@@ -53,13 +54,25 @@ functions:
             - prefix: ${self:custom.key_raw_coinmarketcap}
             - suffix: .parquet
     environment:
-        ATHENA_DB: coinmarketcap
-        ATHENA_TABLE: prd_coinmarketcap_data
-        BUCKET_DATA: ${self:custom.bucket_data}
-        KEY_DATA: stg/newcomers
-        RANK: "[200,100,75,50,40,30,20,10,5]"
+      ATHENA_DB: coinmarketcap
+      ATHENA_TABLE: prd_coinmarketcap_data
+      BUCKET_DATA: ${self:custom.bucket_data}
+      KEY_DATA: ${self:custom.key_stg_newcomers}
+      RANK: "[200,100,75,50,40,30,20,10,5]"
     timeout: 900
-
+  tweet_newcomers:
+    handler: serverless_crypto_analysis/lambda_function/tweets.lambda_handler
+    events:
+      - s3:
+          bucket: ${self:custom.bucket_data}
+          event: s3:ObjectCreated:*
+          rules:
+            - prefix: ${self:custom.key_stg_newcomers}
+            - suffix: .json
+    environment:
+      TWITTER_TOKEN: twitter_token
+      COINMARKETCAP_TOKEN: coinmarketcap_token
+    timeout: 900
 resources:
   Resources:
     S3GlueBucket:

@@ -5,22 +5,16 @@ from collections import OrderedDict
 import boto3
 from mock import patch
 from moto import mock_s3
-
+from serverless_crypto_analysis.utils.s3_utils import get_object_from_s3
+from serverless_crypto_analysis.utils.s3_utils import get_objects_in_bucket
+from serverless_crypto_analysis.utils.s3_utils import create_bucket
 from serverless_crypto_analysis.lambda_function import newcomers
 
 DIR_PATH = os.path.dirname(os.path.realpath(__file__))
 
 
 class TestNewcomers(unittest.TestCase):
-    def create_bucket(self, bucket_name):
-        boto3.client("s3").create_bucket(Bucket=bucket_name)
 
-    def get_objects_in_bucket(self, bucket):
-        return boto3.client("s3").list_objects_v2(Bucket=bucket)["Contents"]
-
-    def get_object_from_s3(self, bucket, key):
-        s3_object = boto3.client("s3").get_object(Bucket=bucket, Key=key)["Body"].read()
-        return s3_object
 
     @patch("serverless_crypto_analysis.lambda_function.newcomers.run_query")
     def test_max_uuid(self, m_query):
@@ -60,12 +54,12 @@ class TestNewcomers(unittest.TestCase):
         os.environ["KEY_DATA"] = "stg/newcomers"
         os.environ["RANK"] = '["100", "200"]'
 
-        self.create_bucket(bucket)
+        create_bucket(bucket)
         m_max_uuid.return_value = "max_uuid"
         m_latest.return_value = ["bitcoin", "ethereum", "ripple"]
         m_tail.return_value = ["iota", "ethereum", "ripple"]
         newcomers.lambda_handler(event=None, context=None)
-        objects = self.get_objects_in_bucket(bucket)
+        objects = get_objects_in_bucket(bucket)
         key = objects[0]["Key"]
-        newcomer = self.get_object_from_s3(bucket, key)
+        newcomer = get_object_from_s3(bucket, key)
         self.assertTrue(newcomer, "bitcoin")

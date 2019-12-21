@@ -13,11 +13,13 @@ pytest = "*"
 pyathena = "*"
 pyarrow = "*"
 requests = "==2.22.0"
+coinmarketcap = "==4.2.1"
 
 [packages]
 boto3 = "*"
 retrying = "*"
-
+bs4 = "*"
+twython = "*"
 
 [requires]
 python_version = "3.6"
