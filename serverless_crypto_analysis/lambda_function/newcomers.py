@@ -46,8 +46,9 @@ def get_newcomers_for_rank(
 
 
 def get_latest_results_for_rank(latest_results, rank):
-    df_latest_for_rank = latest_results[latest_results['rank'].astype(int) <= rank]
+    df_latest_for_rank = latest_results[latest_results["rank"].astype(int) <= rank]
     return df_latest_for_rank
+
 
 def dump_newcomers(newcomers, bucket, dest_key, rank):
     date_time = datetime.datetime.utcnow().isoformat()
@@ -72,7 +73,7 @@ def get_newcomers(latest_results, tail_results):
 def get_max_uuid(athena_db, athena_table):
     result = run_query(
         """SELECT max(uuid) FROM "{}"."{}";""".format(athena_db, athena_table),
-        athena_db
+        athena_db,
     )
     print("max uuid result {}".format(result))
     max_uuid = result[0]["_col0"]
@@ -84,7 +85,7 @@ def get_latest_result(athena_db, athena_table, max_uuid, rank):
         """select id from "{}"."{}" where uuid={} and rank<{};""".format(
             athena_db, athena_table, max_uuid, rank
         ),
-        athena_db
+        athena_db,
     )
     print("latest result {}".format(results))
     latest_results = get_ids_from_results(results)
@@ -96,7 +97,7 @@ def get_tail_results(athena_db, athena_table, max_uuid, rank):
         """select distinct id from "{}"."{}" where uuid<{} and rank <= {};""".format(
             athena_db, athena_table, max_uuid, rank
         ),
-        athena_db
+        athena_db,
     )
     print("tail result {}".format(results))
     tail_results = get_ids_from_results(results)

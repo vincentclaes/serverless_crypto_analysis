@@ -18,7 +18,6 @@ coinmarketcap = "==4.2.1"
 [packages]
 boto3 = "*"
 retrying = "*"
-bs4 = "*"
 twython = "*"
 
 [requires]

@@ -14,8 +14,6 @@ DIR_PATH = os.path.dirname(os.path.realpath(__file__))
 
 
 class TestNewcomers(unittest.TestCase):
-
-
     @patch("serverless_crypto_analysis.lambda_function.newcomers.run_query")
     def test_max_uuid(self, m_query):
         m_query.return_value = [OrderedDict([("_col0", "1575396043")])]
