@@ -19,6 +19,7 @@ coinmarketcap = "==4.2.1"
 boto3 = "*"
 retrying = "*"
 twython = "*"
+loguru = "*"
 
 [requires]
 python_version = "3.6"

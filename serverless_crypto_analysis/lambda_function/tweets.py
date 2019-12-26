@@ -1,5 +1,5 @@
 import json
-import logging
+from loguru import logger
 import os
 import random
 import urllib
@@ -54,7 +54,8 @@ def get_tokens(token_name, type=""):
     conn = boto3.client("secretsmanager")
     secret_string = conn.get_secret_value(SecretId=token_name).get("SecretString")
     if type == "json":
-        return json.loads(secret_string)
+        secret_string = json.loads(secret_string)
+    logger.info("token {} found {}".format(token_name, secret_string))
     return secret_string
 
 
@@ -70,33 +71,33 @@ def get_coinmarketcap_tokens(newcomer_id, coinmarketcap_token):
 
     response = requests.request("GET", url, headers=headers, data=payload)
 
-    print(response.text)
+    logger.info(response.text)
     return json.loads(response.text)
 
 
 def post_tweet(text):
     tokens = get_tokens()
     twitter = Twython(**tokens)
-    twitter.update_status(status=text)
+    return twitter.update_status(status=text)
 
 
 def get_key_from_event(event):
     key = event["Records"][0]["s3"]["object"]["key"]
-    print("key: {}".format(key))
+    logger.info("key: {}".format(key))
     key_ = urllib.parse.unquote_plus(key, encoding="utf-8")
-    print("key_: {}".format(key_))
+    logger.info("key_: {}".format(key_))
     return key_
 
 
 def get_bucket_from_event(event):
     bucket = event["Records"][0]["s3"]["bucket"]["name"]
-    print("bucket: {}".format(bucket))
+    logger.info("bucket: {}".format(bucket))
     return bucket
 
 
 def get_rank_from_s3_key(key):
     rank = int(key.split("/")[-2].split("=")[1])
-    print("rank: {}".format(rank))
+    logger.info("rank: {}".format(rank))
     return rank
 
 
@@ -109,11 +110,13 @@ def get_coin_data(newcomer_id, coinmarketcap_token):
         tweet_id = "@" + twitter[0].split("/")[-1]
     else:
         tweet_id = name
-    return {"name": name, "tweet_id": tweet_id}
+    ret_val = {"name": name, "tweet_id": tweet_id}
+    logger.info("coin data {}".format(ret_val))
+    return ret_val
 
 
 def lambda_handler(event, context):
-    print("event:{}".format(event))
+    logger.info("event:{}".format(event))
     twitter_token = get_tokens(os.environ["TWITTER_TOKEN"], "json")
     coinmarketcap_token = get_tokens(os.environ["COINMARKETCAP_TOKEN"])
 
@@ -124,8 +127,8 @@ def lambda_handler(event, context):
     newcomer_id = s3_utils.get_object_from_s3(bucket, key)
     coin_data = get_coin_data(newcomer_id, coinmarketcap_token)
     text = get_tweet(rank, **coin_data)
-    logging.info("tweet : {}".format(text))
+    logger.info("tweet : {}".format(text))
 
     twitter = Twython(**twitter_token)
     response = twitter.update_status(status=text)
-    logging.info(response)
+    logger.info("twitter response : {}".format(response))

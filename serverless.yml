@@ -58,7 +58,8 @@ functions:
       ATHENA_TABLE: prd_coinmarketcap_data
       BUCKET_DATA: ${self:custom.bucket_data}
       KEY_DATA: ${self:custom.key_stg_newcomers}
-      RANK: "[200,100,75,50,40,30,20,10,5]"
+#      RANK: "[200,100,75,50,40,30,20,10,5]"
+      RANK: "[200,100,50]"
     timeout: 900
   tweet_newcomers:
     handler: serverless_crypto_analysis/lambda_function/tweets.lambda_handler
