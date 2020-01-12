@@ -7,6 +7,7 @@ import requests
 import logging
 import argparse
 import os
+import awswrangler as wr
 
 
 def get_coinmarketcap_data(bucket, key):
@@ -17,7 +18,10 @@ def get_coinmarketcap_data(bucket, key):
 
     df = convert_dict_to_df(response, now, uuid)
     s3_path = build_s3_full_path(now, bucket, key)
-    df.to_parquet(s3_path, compression="gzip")
+    wr.pandas.to_parquet(
+        dataframe=df,
+        path=s3_path,
+        preserve_index=False)
     return df
 
 
@@ -27,7 +31,7 @@ def convert_dict_to_df(response, now, uuid):
     df["hour"] = now.hour
     df["minute"] = now.minute
     df["uuid"] = uuid
-    df = convert_types(df)
+    # df = convert_types(df)
     return df
 
 
