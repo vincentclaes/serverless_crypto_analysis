@@ -90,7 +90,7 @@ resources:
           ScriptLocation: ${self:custom.glue_get_coinmarketcap_data_script}
         Name: ${self:custom.glue_get_coinmarketcap_data}
         DefaultArguments:
-          --extra-py-files: ${self:custom.glue_get_coinmarketcap_data_libs}/pyarrow-0.14.1-cp36-cp36m-manylinux1_x86_64.whl,${self:custom.glue_get_coinmarketcap_data_libs}/requests-2.22.0-py2.py3-none-any.whl,${self:custom.glue_get_coinmarketcap_data_libs}/s3fs-0.3.4-py3-none-any.whl
+          --extra-py-files: ${self:custom.glue_get_coinmarketcap_data_libs}/pyarrow-0.14.1-cp36-cp36m-manylinux1_x86_64.whl,${self:custom.glue_get_coinmarketcap_data_libs}/requests-2.22.0-py2.py3-none-any.whl,${self:custom.glue_get_coinmarketcap_data_libs}/s3fs-0.3.4-py3-none-any.whl,${self:custom.glue_get_coinmarketcap_data_libs}/awswrangler-0.2.1-glue-none-any.whl
           --bucket: ${self:custom.bucket_data}
           --key: ${self:custom.key_raw_coinmarketcap}
     GlueTriggerGetCoinmarketcapData:

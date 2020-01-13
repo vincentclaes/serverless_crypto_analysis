@@ -11,7 +11,7 @@ class MyTestCase(unittest.TestCase):
     def test_get_data_successfully(self):
         bucket = "bucket"
         create_bucket(bucket)
-        get_coinmarketcap_data.get_coinmarketcap_data(bucket, "key")
+        s3_keys = get_coinmarketcap_data.get_coinmarketcap_data(bucket, "key")
         objects = get_objects_in_bucket(bucket)
         get_object_from_s3(bucket, "")
         self.assertEqual(True, False)

@@ -18,11 +18,11 @@ def get_coinmarketcap_data(bucket, key):
 
     df = convert_dict_to_df(response, now, uuid)
     s3_path = build_s3_full_path(now, bucket, key)
-    wr.pandas.to_parquet(
+    s3_keys = wr.pandas.to_parquet(
         dataframe=df,
         path=s3_path,
         preserve_index=False)
-    return df
+    return s3_keys
 
 
 def convert_dict_to_df(response, now, uuid):
