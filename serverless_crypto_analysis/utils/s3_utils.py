@@ -6,8 +6,7 @@ def create_bucket(bucket_name):
 
 
 def get_objects_in_bucket(bucket):
-    # return boto3.client("s3").list_objects_v2(Bucket=bucket)["Contents"]
-    return [s3_object for s3_object in boto3.resource('s3').Bucket(bucket).objects.all()]
+    return boto3.client("s3").list_objects_v2(Bucket=bucket)["Contents"]
 
 
 def get_object_from_s3(bucket, key):
