@@ -52,26 +52,27 @@ def build_s3_full_path(now, bucket, key):
 
 def convert_types(df):
     print(df.dtypes)
-    column_type_mapping = {"id": str,
-                           "name": str,
-                           "symbol": str,
-                           "rank": pd.to_numeric,
-                           "price_usd": pd.to_numeric,
-                           "price_btc": pd.to_numeric,
-                           "24h_volume_usd": pd.to_numeric,
-                           "market_cap_usd": pd.to_numeric,
-                           "available_supply": pd.to_numeric,
-                           "total_supply": pd.to_numeric,
-                           "max_supply": pd.to_numeric,
-                           "percent_change_1h": pd.to_numeric,
-                           "percent_change_24h": pd.to_numeric,
-                           "percent_change_7d": pd.to_numeric,
-                           "last_updated": pd.to_numeric,
-                           "date": pd.to_datetime,
-                           "hour": pd.to_numeric,
-                           "minute": pd.to_numeric,
-                           "uuid": pd.to_numeric
-                           }
+    column_type_mapping = {
+        "id": str,
+        "name": str,
+        "symbol": str,
+        "rank": pd.to_numeric,
+        "price_usd": pd.to_numeric,
+        "price_btc": pd.to_numeric,
+        "24h_volume_usd": pd.to_numeric,
+        "market_cap_usd": pd.to_numeric,
+        "available_supply": pd.to_numeric,
+        "total_supply": pd.to_numeric,
+        "max_supply": pd.to_numeric,
+        "percent_change_1h": pd.to_numeric,
+        "percent_change_24h": pd.to_numeric,
+        "percent_change_7d": pd.to_numeric,
+        "last_updated": pd.to_numeric,
+        "date": pd.to_datetime,
+        "hour": pd.to_numeric,
+        "minute": pd.to_numeric,
+        "uuid": pd.to_numeric,
+    }
     df_updated = pd.DataFrame()
     for column, type_func in column_type_mapping.items():
         print(column, type_func)
@@ -80,7 +81,7 @@ def convert_types(df):
         else:
             df_updated[column] = df[column]
     df_updated = df_updated[~df_updated["rank"].isnull()]
-    df_updated["rank"] = df_updated["rank"].astype('float64')
+    df_updated["rank"] = df_updated["rank"].astype("float64")
     print(df.dtypes)
     return df_updated
 
