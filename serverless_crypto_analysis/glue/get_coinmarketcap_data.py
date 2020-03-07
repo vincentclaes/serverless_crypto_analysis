@@ -34,14 +34,16 @@ def convert_dict_to_df(response, now, uuid):
 
 def query_coinmarketcap():
     url = "https://api.coinmarketcap.com/v1/ticker/"
+    url = "https://pro-api.coinmarketcap.com/v1/cryptocurrency/listings/latest"
     querystring = {"limit": "200"}
     headers = {
         "cache-control": "no-cache",
         "postman-token": "559e252d-ca13-c52c-7667-107f809d9520",
+        "X-CMC_PRO_API_KEY": "fc7667dd-7bd0-4b93-8459-fa8299b0c7e9",
     }
     response = requests.request("GET", url, headers=headers, params=querystring)
     parsed_response = json.loads(response.text)
-    return parsed_response
+    return parsed_response.get("data")
 
 
 def build_s3_full_path(now, bucket, key):
@@ -56,7 +58,7 @@ def convert_types(df):
         "id": str,
         "name": str,
         "symbol": str,
-        "rank": pd.to_numeric,
+        "cmc_rank": pd.to_numeric,
         "price_usd": pd.to_numeric,
         "price_btc": pd.to_numeric,
         "24h_volume_usd": pd.to_numeric,

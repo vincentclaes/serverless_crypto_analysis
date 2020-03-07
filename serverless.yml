@@ -33,9 +33,9 @@ custom:
   glue_newcomers_script: ${self:custom.bucket_glue_url}/newcomers.py
   glue_get_coinmarketcap_data_libs: ${self:custom.bucket_glue_url}/libs
 
-  s3Sync:
-    - bucketName: ${self:custom.bucket_glue}
-      localDir:  serverless_crypto_analysis/glue
+#  s3Sync:
+#    - bucketName: ${self:custom.bucket_glue}
+#      localDir:  serverless_crypto_analysis/glue
 
 
 plugins:
@@ -44,6 +44,14 @@ plugins:
   - serverless-python-requirements
 
 functions:
+  get_coinmarketcap_data:
+    handler: serverless_crypto_analysis/lambda_function/get_coinmarketcap_data.lambda_handler
+    events:
+      - schedule: rate(1 hour)
+    environment:
+      DESTINATION_BUCKET: ${self:custom.bucket_data}
+      DESTINATION_KEY: raw
+#    timeout: 900
   newcomers:
     handler: serverless_crypto_analysis/lambda_function/newcomers.lambda_handler
     events:
@@ -58,49 +66,48 @@ functions:
       ATHENA_TABLE: prd_coinmarketcap_data
       BUCKET_DATA: ${self:custom.bucket_data}
       KEY_DATA: ${self:custom.key_stg_newcomers}
-      RANK: "[200,100,75,50,40,30,20,10,5]"
-#      RANK: "[200,100,50]"
+      RANK: "[]"
     timeout: 900
-  tweet_newcomers:
-    handler: serverless_crypto_analysis/lambda_function/tweets.lambda_handler
-    events:
-      - s3:
-          bucket: ${self:custom.bucket_data}
-          event: s3:ObjectCreated:*
-          rules:
-            - prefix: ${self:custom.key_stg_newcomers}
-            - suffix: .json
-    environment:
-      TWITTER_TOKEN: twitter_token
-      COINMARKETCAP_TOKEN: coinmarketcap_token
-    timeout: 900
-resources:
-  Resources:
-    S3GlueBucket:
-      Type: AWS::S3::Bucket
-      Properties:
-        BucketName: ${self:custom.bucket_glue}
-    GlueJobGetCoinmarketcapData:
-      Type: AWS::Glue::Job
-      Properties: 
-        Role: ${self:custom.glue_role}
-        Command:   
-          Name: pythonshell
-          PythonVersion: 3
-          ScriptLocation: ${self:custom.glue_get_coinmarketcap_data_script}
-        Name: ${self:custom.glue_get_coinmarketcap_data}
-        DefaultArguments:
-          --extra-py-files: ${self:custom.glue_get_coinmarketcap_data_libs}/requests-2.22.0-py2.py3-none-any.whl,${self:custom.glue_get_coinmarketcap_data_libs}/awswrangler-0.2.1-glue-none-any.whl
-          --bucket: ${self:custom.bucket_data}
-          --key: ${self:custom.key_raw_coinmarketcap}
-    GlueTriggerGetCoinmarketcapData:
-      Type: AWS::Glue::Trigger
-      Properties:
-        Type: SCHEDULED
-        Schedule: cron(0 * * * ?)        
-        Actions:
-          - JobName: ${self:custom.glue_get_coinmarketcap_data}
-            Arguments:
-              --bucket: ${self:custom.bucket_data}
-              --key: ${self:custom.key_raw_coinmarketcap}
-        Name: ${self:custom.glue_get_coinmarketcap_data}
+#  tweet_newcomers:
+#    handler: serverless_crypto_analysis/lambda_function/tweets.lambda_handler
+#    events:
+#      - s3:
+#          bucket: ${self:custom.bucket_data}
+#          event: s3:ObjectCreated:*
+#          rules:
+#            - prefix: ${self:custom.key_stg_newcomers}
+#            - suffix: .json
+#    environment:
+#      TWITTER_TOKEN: twitter_token
+#      COINMARKETCAP_TOKEN: coinmarketcap_token
+#    timeout: 900
+#resources:
+#  Resources:
+#    S3GlueBucket:
+#      Type: AWS::S3::Bucket
+#      Properties:
+#        BucketName: ${self:custom.bucket_glue}
+#    GlueJobGetCoinmarketcapData:
+#      Type: AWS::Glue::Job
+#      Properties:
+#        Role: ${self:custom.glue_role}
+#        Command:
+#          Name: pythonshell
+#          PythonVersion: 3
+#          ScriptLocation: ${self:custom.glue_get_coinmarketcap_data_script}
+#        Name: ${self:custom.glue_get_coinmarketcap_data}
+#        DefaultArguments:
+#          --extra-py-files: ${self:custom.glue_get_coinmarketcap_data_libs}/requests-2.22.0-py2.py3-none-any.whl,${self:custom.glue_get_coinmarketcap_data_libs}/awswrangler-0.2.1-glue-none-any.whl
+#          --bucket: ${self:custom.bucket_data}
+#          --key: ${self:custom.key_raw_coinmarketcap}
+#    GlueTriggerGetCoinmarketcapData:
+#      Type: AWS::Glue::Trigger
+#      Properties:
+#        Type: SCHEDULED
+#        Schedule: cron(0 * * * ?)
+#        Actions:
+#          - JobName: ${self:custom.glue_get_coinmarketcap_data}
+#            Arguments:
+#              --bucket: ${self:custom.bucket_data}
+#              --key: ${self:custom.key_raw_coinmarketcap}
+#        Name: ${self:custom.glue_get_coinmarketcap_data}

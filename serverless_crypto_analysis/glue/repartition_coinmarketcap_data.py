@@ -16,7 +16,7 @@ def pd_read_s3_parquet(bucket, key, s3_client=None, **args):
 
 
 def pd_read_s3_multiple_parquets(
-        bucket, filepath, s3=None, s3_client=None, verbose=False, **args
+    bucket, filepath, s3=None, s3_client=None, verbose=False, **args
 ):
     if not filepath.endswith("/"):
         filepath = filepath + "/"  # Add '/' to the end
@@ -80,13 +80,13 @@ def convert_types(df):
 
 
 def repartition(bucket, key, backup_bucket, backup_key):
-    df = pd_read_s3_multiple_parquets(
-        bucket, key
-    )
+    df = pd_read_s3_multiple_parquets(bucket, key)
     df = convert_types(df)
     wr.pandas.to_parquet(
         dataframe=df,
-        path="s3://{}/{}/{}".format(backup_bucket, backup_key, datetime.datetime.utcnow()),
+        path="s3://{}/{}/{}".format(
+            backup_bucket, backup_key, datetime.datetime.now().isoformat()
+        ),
         preserve_index=False,
     )
     wr.pandas.to_parquet(
@@ -97,7 +97,7 @@ def repartition(bucket, key, backup_bucket, backup_key):
     )
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     logging.basicConfig(level=logging.DEBUG)
     parser = argparse.ArgumentParser()
     parser.add_argument("--bucket", type=str, required=True)
