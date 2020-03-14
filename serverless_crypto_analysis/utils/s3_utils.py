@@ -1,5 +1,5 @@
 import boto3
-
+import os
 
 def create_bucket(bucket_name):
     boto3.client("s3").create_bucket(Bucket=bucket_name)
@@ -21,3 +21,8 @@ def get_object_from_s3(bucket, key):
 
 def put_s3_object(object_, destination_bucket, key):
     boto3.client("s3").put_object(Body=object_, Bucket=destination_bucket, Key=key)
+
+
+def build_s3_url(bucket, key):
+    full_s3_path = os.path.join(bucket, key)
+    return "s3://{}".format(full_s3_path)

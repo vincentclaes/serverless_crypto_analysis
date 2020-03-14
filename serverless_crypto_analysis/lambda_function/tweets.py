@@ -2,13 +2,12 @@ import json
 from loguru import logger
 import os
 import random
-import urllib
-from urllib.parse import urlparse
 
 import boto3
 from twython import Twython
 
 from serverless_crypto_analysis.utils import s3_utils
+from serverless_crypto_analysis.utils.lambda_utils import get_key_from_event, get_bucket_from_event
 
 
 def get_tweet(rank, **kwargs):
@@ -79,20 +78,6 @@ def post_tweet(text):
     tokens = get_tokens()
     twitter = Twython(**tokens)
     return twitter.update_status(status=text)
-
-
-def get_key_from_event(event):
-    key = event["Records"][0]["s3"]["object"]["key"]
-    logger.info("key: {}".format(key))
-    key_ = urllib.parse.unquote_plus(key, encoding="utf-8")
-    logger.info("key_: {}".format(key_))
-    return key_
-
-
-def get_bucket_from_event(event):
-    bucket = event["Records"][0]["s3"]["bucket"]["name"]
-    logger.info("bucket: {}".format(bucket))
-    return bucket
 
 
 def get_rank_from_s3_key(key):

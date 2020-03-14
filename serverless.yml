@@ -3,7 +3,7 @@ service: serverless-crypto-analysis
 
 provider:
   name: aws
-  runtime: python3.6
+  runtime: python3.8
   region: eu-central-1
   stage: ${opt:stage, "dev"}
   role: arn:aws:iam::077590795309:role/serverless-crypto-analysis-prd-eu-central-1-lambdaRole
@@ -42,7 +42,6 @@ plugins:
   - serverless-s3-remover
   - serverless-s3-sync
   - serverless-python-requirements
-
 functions:
   get_coinmarketcap_data:
     handler: serverless_crypto_analysis/lambda_function/get_coinmarketcap_data.lambda_handler
@@ -68,6 +67,14 @@ functions:
       KEY_DATA: ${self:custom.key_stg_newcomers}
       RANK: "[]"
     timeout: 900
+
+layers:
+  awswrangler:
+    path: layers
+    name: ${self:provider.stage}-awswrangler
+    compatibleRuntimes:
+      - python3.8
+
 #  tweet_newcomers:
 #    handler: serverless_crypto_analysis/lambda_function/tweets.lambda_handler
 #    events:

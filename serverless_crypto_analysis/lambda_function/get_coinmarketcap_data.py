@@ -1,14 +1,12 @@
-import json
-import time
 import datetime
-
-import pandas as pd
-import requests
+import json
 import logging
-import argparse
 import os
-import awswrangler as wr
+import time
+
 import boto3
+import requests
+from enum import Enum
 from serverless_crypto_analysis.utils.enums import S3Enums
 
 
