@@ -1,13 +1,10 @@
+import os
 import unittest
 
-from mock import patch
-import json
+from moto import mock_s3
+
 from serverless_crypto_analysis.lambda_function import filter_for_newcomers
 from serverless_crypto_analysis.utils import s3_utils
-from moto import mock_secretsmanager
-from moto import mock_s3
-import boto3
-import os
 
 dir_path = os.path.dirname(os.path.realpath(__file__))
 
@@ -17,7 +14,7 @@ class TestFilterForNewcomers(unittest.TestCase):
     key = "coinmarketcap_data.json"
 
     @mock_s3
-    def test_run_several_ids(self, m_status, m_coinmarketcap) -> None:
+    def test_run_several_ids(self) -> None:
         s3_utils.create_bucket(TestFilterForNewcomers.bucket)
         test_file_path = os.path.join(
             dir_path, "resources", "test_filter_for_newcomers.json"
@@ -30,6 +27,9 @@ class TestFilterForNewcomers(unittest.TestCase):
             context=None,
         )
 
+    @staticmethod
+    def read_local_object(path):
+        return open(path, "rb")
 
     @staticmethod
     def build_event(bucket, key):

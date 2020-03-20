@@ -12,6 +12,7 @@ moto= "==1.3.14"
 [packages]
 requests = "==2.22.0"
 boto = "*"
+loguru = "*"
 
 [requires]
 python_version = "3.8"
