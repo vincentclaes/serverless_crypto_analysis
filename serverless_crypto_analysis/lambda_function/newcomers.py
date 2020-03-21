@@ -54,9 +54,13 @@ def dump_newcomers(newcomers, bucket, dest_key, rank):
     date_time = datetime.datetime.utcnow().isoformat()
     for newcomer in newcomers:
         full_dest_key = os.path.join(
-            dest_key, "rank={}".format(rank), date_time + "-" + newcomer + ".json"
+            dest_key, "{}-{}-{}.json".format(date_time, rank, newcomer)
         )
-        boto3.client("s3").put_object(Body=newcomer, Bucket=bucket, Key=full_dest_key)
+        object_ = {
+            "id":newcomer,
+            "rank":rank
+        }
+        boto3.client("s3").put_object(Body=json.dumps(object_), Bucket=bucket, Key=full_dest_key)
 
 
 def get_newcomers(latest_results, tail_results):

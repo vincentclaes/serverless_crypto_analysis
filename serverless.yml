@@ -71,18 +71,13 @@ functions:
   newcomers:
     handler: serverless_crypto_analysis/lambda_function/newcomers.lambda_handler
     events:
-      - s3:
-          bucket: ${self:custom.bucket_data}
-          event: s3:ObjectCreated:*
-          rules:
-            - prefix: ${self:custom.key_raw_coinmarketcap}
-            - suffix: .parquet
+      - schedule: rate(6 hours)
     environment:
       ATHENA_DB: coinmarketcap
-      ATHENA_TABLE: prd_coinmarketcap_data
+      ATHENA_TABLE: stg_filter_for_newcomers
       BUCKET_DATA: ${self:custom.bucket_data}
       KEY_DATA: ${self:custom.key_stg_newcomers}
-      RANK: "[]"
+      RANK: "[200,100,50]"
     timeout: 900
 
 #layers:
