@@ -25,12 +25,14 @@ def lambda_handler(event, context):
     print(key_data)
     rank_list = json.loads(os.environ["RANK"])
     print(rank_list)
-    max_uuid = get_max_uuid(athena_db, athena_table)
+    uuid = event.get("uuid")
+    if uuid is None:
+        uuid = get_max_uuid(athena_db, athena_table)
     ret_val = {}
     for rank in rank_list:
         print("running for rank : {}".format(rank))
         newcomers = get_newcomers_for_rank(
-            athena_db, athena_table, bucket_data, key_data, max_uuid, rank
+            athena_db, athena_table, bucket_data, key_data, uuid, rank
         )
         ret_val[rank] = newcomers
     return ret_val

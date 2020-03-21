@@ -80,6 +80,18 @@ functions:
       RANK: "[200,100,50]"
     timeout: 900
 
+  backfill_newcomers:
+    handler: serverless_crypto_analysis/lambda_function/backfill_newcomers.lambda_handler
+    environment:
+      ATHENA_DB: coinmarketcap
+      ATHENA_TABLE: stg_filter_for_newcomers
+      FUNCTION_NAME: ${self:custom.glue_newcomers}
+
+    timeout: 900
+    layers:
+      # we reference the version that is manually uploaded
+      - arn:aws:lambda:eu-central-1:077590795309:layer:awswrangler:1
+
 #layers:
 #  awswrangler:
 #    path: layers

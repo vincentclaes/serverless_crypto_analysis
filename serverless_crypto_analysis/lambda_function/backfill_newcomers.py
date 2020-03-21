@@ -1,11 +1,8 @@
-import csv
+import datetime
 import os
 import json
-import boto3
-import botocore
-import datetime
 import awswrangler as wr
-from retrying import retry
+import boto3
 
 # init clients
 lambda_client = boto3.client("lambda")
@@ -15,7 +12,7 @@ def lambda_handler(event, context):
     df = get_distinct_uuid()
     df["date"] = df["uuid"].apply(lambda x: datetime.datetime.fromtimestamp(x).date())
     df["time"] = df["uuid"].apply(lambda x: datetime.datetime.fromtimestamp(x).time())
-    df = df.groupby("date")["uuid"].agg({"time": max})
+    df = df.groupby("date")["uuid"].agg(time= max)
     df["uuid"] = df["time"]
     for uuid in df["uuid"].sort_values():
         print("invoking for date {}".format(uuid))
@@ -23,11 +20,12 @@ def lambda_handler(event, context):
         response = lambda_client.invoke(
             FunctionName=function_name,
             InvocationType="RequestResponse",
-            Payload={"uuid" : uuid}
+            Payload=json.dumps({"uuid": uuid})
         )
         print(response)
 
         lambda_client.invoke()
+
 
 def get_distinct_uuid():
     athena_db = os.environ["ATHENA_DB"]
