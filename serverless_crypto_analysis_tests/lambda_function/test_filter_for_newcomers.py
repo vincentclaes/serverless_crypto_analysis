@@ -22,7 +22,6 @@ class TestFilterForNewcomers(unittest.TestCase):
         )
         test_file = TestFilterForNewcomers.read_local_object(test_file_path)
         s3_utils.put_s3_object(test_file, TestFilterForNewcomers.bucket, TestFilterForNewcomers.key)
-
         result = filter_for_newcomers.lambda_handler(
             event=TestFilterForNewcomers.build_event(bucket=TestFilterForNewcomers.bucket, key=TestFilterForNewcomers.key),
             context=None,

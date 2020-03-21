@@ -86,7 +86,7 @@ functions:
       ATHENA_DB: coinmarketcap
       ATHENA_TABLE: stg_filter_for_newcomers
       FUNCTION_NAME: ${self:custom.glue_newcomers}
-
+      YEAR: 2020
     timeout: 900
     layers:
       # we reference the version that is manually uploaded

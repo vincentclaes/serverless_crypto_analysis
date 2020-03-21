@@ -12,6 +12,10 @@ def lambda_handler(event, context):
     df = get_distinct_uuid()
     df["date"] = df["uuid"].apply(lambda x: datetime.datetime.fromtimestamp(x).date())
     df["time"] = df["uuid"].apply(lambda x: datetime.datetime.fromtimestamp(x).time())
+    year = os.environ.get("YEAR")
+    if year:
+        year = int(year)
+        df = df[df["date"] > datetime.date(year,1,1)]
     df = df.groupby("date")["uuid"].agg(time= max)
     df["uuid"] = df["time"]
     for uuid in df["uuid"].sort_values():
@@ -20,6 +24,11 @@ def lambda_handler(event, context):
 
 
 def trigger_lambda(uuid):
+    """
+    trigger lambda asynchronuous by using "Event" as invocationtype.
+    :param uuid:
+    :return:
+    """
     function_name = os.environ["FUNCTION_NAME"]
     response = lambda_client.invoke(
         FunctionName=function_name,

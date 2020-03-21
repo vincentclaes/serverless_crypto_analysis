@@ -21,4 +21,5 @@ class TestNewcomers(unittest.TestCase):
         m_uuid.return_value = pd.read_csv(os.path.join(
             dir_path, "resources", "test_backfill_newcomers.csv"
         ))
+        os.environ["YEAR"] = "2020"
         backfill_newcomers.lambda_handler(None, None)
