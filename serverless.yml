@@ -77,7 +77,7 @@ functions:
       ATHENA_TABLE: stg_filter_for_newcomers
       BUCKET_DATA: ${self:custom.bucket_data}
       KEY_DATA: ${self:custom.key_stg_newcomers}
-      RANK: "[200,100,50]"
+      RANK: "[200,100,75,50,40,30,20,10]"
     timeout: 900
 
   backfill_newcomers:
