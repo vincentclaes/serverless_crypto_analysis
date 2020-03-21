@@ -23,8 +23,12 @@ def lambda_handler(event, context):
     del df["cmc_rank"]
     df["uuid"] = get_uuid_from_key(source_key)
     df["partition"] = 1
-
+    df = df.astype({"id": str, "rank": int, "uuid": int})
     # write data
+    write_to_parquet(df)
+    return df
+
+def write_to_parquet(df):
     destination_bucket = os.environ["DESTINATION_BUCKET"]
     destination_key = os.environ["DESTINATION_KEY"]
     s3_url = build_s3_url(destination_bucket, destination_key)
@@ -35,6 +39,7 @@ def lambda_handler(event, context):
         partition_cols=["partition"],
         mode="append"
     )
+
 
 def get_uuid_from_key(key):
     return os.path.split(key)[1].split(".json")[0]
