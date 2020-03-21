@@ -16,15 +16,17 @@ def lambda_handler(event, context):
     df["uuid"] = df["time"]
     for uuid in df["uuid"].sort_values():
         print("invoking for date {}".format(uuid))
-        function_name = os.environ["FUNCTION_NAME"]
-        response = lambda_client.invoke(
-            FunctionName=function_name,
-            InvocationType="RequestResponse",
-            Payload=json.dumps({"uuid": uuid})
-        )
-        print(response)
+        trigger_lambda(uuid)
 
-        lambda_client.invoke()
+
+def trigger_lambda(uuid):
+    function_name = os.environ["FUNCTION_NAME"]
+    response = lambda_client.invoke(
+        FunctionName=function_name,
+        InvocationType="Event",
+        Payload=json.dumps({"uuid": uuid})
+    )
+    print(response)
 
 
 def get_distinct_uuid():

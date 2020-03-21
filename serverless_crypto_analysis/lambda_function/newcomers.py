@@ -39,12 +39,12 @@ def lambda_handler(event, context):
 
 
 def get_newcomers_for_rank(
-    athena_db, athena_table, bucket_data, key_data, max_uuid, rank
+    athena_db, athena_table, bucket_data, key_data, uuid, rank
 ):
-    latest_results = get_latest_result(athena_db, athena_table, max_uuid, rank)
-    tail_results = get_tail_results(athena_db, athena_table, max_uuid, rank)
+    latest_results = get_latest_result(athena_db, athena_table, uuid, rank)
+    tail_results = get_tail_results(athena_db, athena_table, uuid, rank)
     newcomers = get_newcomers(latest_results, tail_results)
-    dump_newcomers(newcomers, bucket_data, key_data, rank)
+    dump_newcomers(newcomers, bucket_data, key_data, uuid, rank)
 
 
 def get_latest_results_for_rank(latest_results, rank):
@@ -52,8 +52,8 @@ def get_latest_results_for_rank(latest_results, rank):
     return df_latest_for_rank
 
 
-def dump_newcomers(newcomers, bucket, dest_key, rank):
-    date_time = datetime.datetime.utcnow().isoformat()
+def dump_newcomers(newcomers, bucket, dest_key, uuid, rank):
+    date_time = datetime.datetime.fromtimestamp(int(uuid)).isoformat()
     for newcomer in newcomers:
         full_dest_key = os.path.join(
             dest_key, "{}-{}-{}.json".format(date_time, rank, newcomer)

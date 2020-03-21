@@ -15,8 +15,9 @@ dir_path = os.path.dirname(os.path.realpath(__file__))
 
 class TestNewcomers(unittest.TestCase):
 
+    @patch("serverless_crypto_analysis.lambda_function.backfill_newcomers.trigger_lambda")
     @patch("serverless_crypto_analysis.lambda_function.backfill_newcomers.get_distinct_uuid")
-    def test_handler(self, m_uuid):
+    def test_handler_happy_flow(self, m_uuid, m_trigger):
         m_uuid.return_value = pd.read_csv(os.path.join(
             dir_path, "resources", "test_backfill_newcomers.csv"
         ))

@@ -53,10 +53,10 @@ class TestNewcomers(unittest.TestCase):
         os.environ["RANK"] = '["100", "200"]'
 
         create_bucket(bucket)
-        m_max_uuid.return_value = "max_uuid"
+        m_max_uuid.return_value = "1570896046"
         m_latest.return_value = ["bitcoin", "ethereum", "ripple"]
         m_tail.return_value = ["iota", "ethereum", "ripple"]
-        newcomers.lambda_handler(event=None, context=None)
+        newcomers.lambda_handler(event={}, context=None)
         objects = get_objects_in_bucket(bucket)
         key = objects[0]["Key"]
         newcomer = get_object_from_s3(bucket, key)
