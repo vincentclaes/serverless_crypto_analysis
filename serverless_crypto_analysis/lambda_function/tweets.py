@@ -1,13 +1,14 @@
 import json
-from loguru import logger
 import os
 import random
 
 import boto3
+from loguru import logger
 from twython import Twython
 
 from serverless_crypto_analysis.utils import s3_utils
-from serverless_crypto_analysis.utils.lambda_utils import get_key_from_event, get_bucket_from_event
+from serverless_crypto_analysis.utils.lambda_utils import (
+    get_bucket_from_event, get_key_from_event)
 
 
 def get_tweet(rank, **kwargs):

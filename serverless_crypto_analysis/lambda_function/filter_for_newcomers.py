@@ -1,11 +1,13 @@
-from serverless_crypto_analysis.utils.lambda_utils import get_bucket_from_event
-from serverless_crypto_analysis.utils.lambda_utils import get_key_from_event
-from serverless_crypto_analysis.utils.s3_utils import get_object_from_s3
-from serverless_crypto_analysis.utils.s3_utils import build_s3_url
+import json
+import os
+
 import awswrangler as wr
 import pandas as pd
-import os
-import json
+
+from serverless_crypto_analysis.utils.lambda_utils import (
+    get_bucket_from_event, get_key_from_event)
+from serverless_crypto_analysis.utils.s3_utils import (build_s3_url,
+                                                       get_object_from_s3)
 
 
 def lambda_handler(event, context):

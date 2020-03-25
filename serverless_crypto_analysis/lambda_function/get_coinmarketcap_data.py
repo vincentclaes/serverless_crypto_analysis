@@ -3,10 +3,11 @@ import json
 import logging
 import os
 import time
+from enum import Enum
 
 import boto3
 import requests
-from enum import Enum
+
 from serverless_crypto_analysis.utils.enums import S3Enums
 
 

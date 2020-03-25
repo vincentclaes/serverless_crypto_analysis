@@ -1,10 +1,10 @@
 import csv
-import os
+import datetime
 import json
+import os
+
 import boto3
 import botocore
-import datetime
-
 from retrying import retry
 
 # init clients
@@ -28,21 +28,22 @@ def lambda_handler(event, context):
     uuid = event.get("uuid")
     if uuid is None:
         uuid = get_max_uuid(athena_db, athena_table)
+    lookback_period = event.get("lookback_period", 0)
     ret_val = {}
     for rank in rank_list:
         print("running for rank : {}".format(rank))
         newcomers = get_newcomers_for_rank(
-            athena_db, athena_table, bucket_data, key_data, uuid, rank
+            athena_db, athena_table, bucket_data, key_data, uuid, lookback_period, rank
         )
         ret_val[rank] = newcomers
     return ret_val
 
 
 def get_newcomers_for_rank(
-    athena_db, athena_table, bucket_data, key_data, uuid, rank
+    athena_db, athena_table, bucket_data, key_data, uuid, hours_ante, rank
 ):
     latest_results = get_latest_result(athena_db, athena_table, uuid, rank)
-    tail_results = get_tail_results(athena_db, athena_table, uuid, rank)
+    tail_results = get_tail_results(athena_db, athena_table, uuid, hours_ante, rank)
     newcomers = get_newcomers(latest_results, tail_results)
     dump_newcomers(newcomers, bucket_data, key_data, uuid, rank)
 
@@ -98,10 +99,11 @@ def get_latest_result(athena_db, athena_table, max_uuid, rank):
     return latest_results
 
 
-def get_tail_results(athena_db, athena_table, max_uuid, rank):
+def get_tail_results(athena_db, athena_table, max_uuid, hours_ante, rank):
+    uuid = int(max_uuid) - int(hours_ante)
     results = run_query(
         """select distinct id from "{}"."{}" where uuid<{} and rank <= {};""".format(
-            athena_db, athena_table, max_uuid, rank
+            athena_db, athena_table, uuid, rank
         ),
         athena_db,
     )

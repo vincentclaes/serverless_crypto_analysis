@@ -1,9 +1,10 @@
 import datetime
-import os
 import json
+import os
+import time
+
 import awswrangler as wr
 import boto3
-import time
 
 # init clients
 lambda_client = boto3.client("lambda")
@@ -13,6 +14,7 @@ def lambda_handler(event, context):
     df = get_distinct_uuid()
     df["date"] = df["uuid"].apply(lambda x: datetime.datetime.fromtimestamp(x).date())
     df["time"] = df["uuid"].apply(lambda x: datetime.datetime.fromtimestamp(x).time())
+    lookback_period = os.environ["LOOKBACK_PERIOD"]
     year = os.environ.get("YEAR")
     if year:
         year = int(year)
@@ -21,10 +23,10 @@ def lambda_handler(event, context):
     df["uuid"] = df["time"]
     for uuid in df["uuid"].sort_values():
         print("invoking for date {}".format(uuid))
-        trigger_lambda(uuid)
+        trigger_lambda(uuid, lookback_period)
 
 
-def trigger_lambda(uuid):
+def trigger_lambda(uuid, lookback_period):
     """
     trigger lambda asynchronuous by using "Event" as invocationtype.
     :param uuid:
@@ -34,7 +36,7 @@ def trigger_lambda(uuid):
     response = lambda_client.invoke(
         FunctionName=function_name,
         InvocationType="Event",
-        Payload=json.dumps({"uuid": uuid})
+        Payload=json.dumps({"uuid": uuid, "lookback_period": lookback_period})
     )
     time.sleep(0.5)
     print(response)

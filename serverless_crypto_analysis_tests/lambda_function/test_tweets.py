@@ -1,14 +1,14 @@
+import json
+import os
 import unittest
 
+import boto3
 from mock import patch
-import json
+from moto import mock_s3, mock_secretsmanager
+
 from serverless_crypto_analysis.lambda_function import tweets
 from serverless_crypto_analysis.lambda_function.tweets import Twython
 from serverless_crypto_analysis.utils import s3_utils
-from moto import mock_secretsmanager
-from moto import mock_s3
-import boto3
-import os
 
 dir_path = os.path.dirname(os.path.realpath(__file__))
 

@@ -5,10 +5,11 @@ from collections import OrderedDict
 import boto3
 from mock import patch
 from moto import mock_s3
-from serverless_crypto_analysis.utils.s3_utils import get_object_from_s3
-from serverless_crypto_analysis.utils.s3_utils import get_objects_in_bucket
-from serverless_crypto_analysis.utils.s3_utils import create_bucket
+
 from serverless_crypto_analysis.lambda_function import newcomers
+from serverless_crypto_analysis.utils.s3_utils import (create_bucket,
+                                                       get_object_from_s3,
+                                                       get_objects_in_bucket)
 
 DIR_PATH = os.path.dirname(os.path.realpath(__file__))
 
@@ -37,7 +38,7 @@ class TestNewcomers(unittest.TestCase):
             OrderedDict([("id", "ethereum")]),
             OrderedDict([("id", "ripple")]),
         ]
-        result = newcomers.get_tail_results("db", "table", "38484892", "100")
+        result = newcomers.get_tail_results("db", "table", "38484892", "0", "100")
         self.assertListEqual(result, ["iota", "ethereum", "ripple"])
 
     @mock_s3

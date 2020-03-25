@@ -1,8 +1,9 @@
 import os
 import unittest
+from unittest.mock import patch
 
 from moto import mock_s3
-from unittest.mock import patch
+
 from serverless_crypto_analysis.lambda_function import filter_for_newcomers
 from serverless_crypto_analysis.utils import s3_utils
 

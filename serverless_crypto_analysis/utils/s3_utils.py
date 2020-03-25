@@ -1,5 +1,7 @@
-import boto3
 import os
+
+import boto3
+
 
 def create_bucket(bucket_name):
     boto3.client("s3").create_bucket(Bucket=bucket_name)

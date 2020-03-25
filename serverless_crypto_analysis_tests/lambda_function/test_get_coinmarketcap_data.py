@@ -6,8 +6,8 @@ from moto import mock_s3
 
 from serverless_crypto_analysis.lambda_function import get_coinmarketcap_data
 from serverless_crypto_analysis.utils.enums import S3Enums
-from serverless_crypto_analysis.utils.s3_utils import create_bucket
-from serverless_crypto_analysis.utils.s3_utils import get_object_from_s3
+from serverless_crypto_analysis.utils.s3_utils import (create_bucket,
+                                                       get_object_from_s3)
 
 DIR_PATH = os.path.dirname(os.path.realpath(__file__))
 

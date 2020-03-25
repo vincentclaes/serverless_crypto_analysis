@@ -1,7 +1,7 @@
-import io
-import logging
 import argparse
 import datetime
+import io
+import logging
 
 import awswrangler as wr
 import boto3
