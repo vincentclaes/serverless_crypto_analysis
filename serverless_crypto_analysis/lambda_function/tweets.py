@@ -101,6 +101,7 @@ def lambda_handler(event, context):
     if distutils.util.strtobool(os.environ["SKIPTWEET"]):
         logger.info("SKIPTWEET value {}".format(os.environ["SKIPTWEET"]))
         logger.info("skipping tweet ...")
+        return
     twitter_token = get_tokens(os.environ["TWITTER_TOKEN"], "json")
     coinmarketcap_token = get_tokens(os.environ["COINMARKETCAP_TOKEN"])
 
