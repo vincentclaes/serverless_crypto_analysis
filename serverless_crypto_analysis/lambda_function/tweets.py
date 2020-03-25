@@ -2,6 +2,7 @@ import json
 import os
 import random
 
+import distutils
 import boto3
 from loguru import logger
 from twython import Twython
@@ -81,12 +82,6 @@ def post_tweet(text):
     return twitter.update_status(status=text)
 
 
-def get_rank_from_s3_key(key):
-    rank = int(key.split("/")[-2].split("=")[1])
-    logger.info("rank: {}".format(rank))
-    return rank
-
-
 def get_coin_data(newcomer_id, coinmarketcap_token):
     coin_data_response = get_coinmarketcap_tokens(newcomer_id, coinmarketcap_token)
     coin_data = next(iter(coin_data_response.get("data").items()))[1]
@@ -103,14 +98,18 @@ def get_coin_data(newcomer_id, coinmarketcap_token):
 
 def lambda_handler(event, context):
     logger.info("event:{}".format(event))
+    if distutils.util.strtobool(os.environ["SKIPTWEET"]):
+        logger.info("SKIPTWEET value {}".format(os.environ["SKIPTWEET"]))
+        logger.info("skipping tweet ...")
     twitter_token = get_tokens(os.environ["TWITTER_TOKEN"], "json")
     coinmarketcap_token = get_tokens(os.environ["COINMARKETCAP_TOKEN"])
 
     bucket = get_bucket_from_event(event)
     key = get_key_from_event(event)
-    rank = get_rank_from_s3_key(key)
 
-    newcomer_id = s3_utils.get_object_from_s3(bucket, key)
+    newcomer = json.loads(s3_utils.get_object_from_s3(bucket, key))
+    newcomer_id = newcomer.get("id")
+    rank = newcomer.get("rank")
     coin_data = get_coin_data(newcomer_id, coinmarketcap_token)
     text = get_tweet(rank, **coin_data)
     logger.info("tweet : {}".format(text))

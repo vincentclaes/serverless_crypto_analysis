@@ -91,6 +91,7 @@ functions:
     environment:
       TWITTER_TOKEN: twitter_token
       COINMARKETCAP_TOKEN: coinmarketcap_token
+      SKIPTWEET: True
     timeout: 900
   backfill_newcomers:
     handler: serverless_crypto_analysis/lambda_function/backfill_newcomers.lambda_handler

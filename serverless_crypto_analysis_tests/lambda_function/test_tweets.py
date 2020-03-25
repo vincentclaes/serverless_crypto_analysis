@@ -45,6 +45,7 @@ class TestTweets(unittest.TestCase):
 
         os.environ["TWITTER_TOKEN"] = TestTweets.twitter_token
         os.environ["COINMARKETCAP_TOKEN"] = TestTweets.coinmarketcap_token
+        os.environ["SKIPTWEET"] = "False"
 
         conn = boto3.client("secretsmanager")
         twitter_keys = {
