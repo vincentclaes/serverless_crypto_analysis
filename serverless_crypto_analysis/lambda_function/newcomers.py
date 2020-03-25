@@ -28,7 +28,7 @@ def lambda_handler(event, context):
     uuid = event.get("uuid")
     if uuid is None:
         uuid = get_max_uuid(athena_db, athena_table)
-    lookback_period = event.get("lookback_period", 0)
+    lookback_period = event.get("lookback_period", os.environ["LOOKBACK_PERIOD"])
     ret_val = {}
     for rank in rank_list:
         print("running for rank : {}".format(rank))
