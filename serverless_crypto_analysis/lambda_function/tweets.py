@@ -2,7 +2,7 @@ import json
 import os
 import random
 
-import distutils
+from distutils.util import strtobool
 import boto3
 from loguru import logger
 from twython import Twython
@@ -98,7 +98,7 @@ def get_coin_data(newcomer_id, coinmarketcap_token):
 
 def lambda_handler(event, context):
     logger.info("event:{}".format(event))
-    if distutils.util.strtobool(os.environ["SKIPTWEET"]):
+    if strtobool(os.environ["SKIPTWEET"]):
         logger.info("SKIPTWEET value {}".format(os.environ["SKIPTWEET"]))
         logger.info("skipping tweet ...")
         return

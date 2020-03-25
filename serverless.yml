@@ -33,10 +33,6 @@ custom:
   glue_newcomers_script: ${self:custom.bucket_glue_url}/newcomers.py
   glue_get_coinmarketcap_data_libs: ${self:custom.bucket_glue_url}/libs
 
-#  s3Sync:
-#    - bucketName: ${self:custom.bucket_glue}
-#      localDir:  serverless_crypto_analysis/glue
-
 
 plugins:
   - serverless-s3-remover
@@ -51,7 +47,6 @@ functions:
     environment:
       DESTINATION_BUCKET: ${self:custom.bucket_data}
       DESTINATION_KEY: raw
-#    timeout: 900
   filter_for_newcomers:
     handler: serverless_crypto_analysis/lambda_function/filter_for_newcomers.lambda_handler
     events:
