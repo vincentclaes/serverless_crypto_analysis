@@ -79,7 +79,19 @@ functions:
       KEY_DATA: ${self:custom.key_stg_newcomers}
       RANK: "[200,100,75,50,40,30,20,10]"
     timeout: 900
-
+  tweet_newcomers:
+    handler: serverless_crypto_analysis/lambda_function/tweets.lambda_handler
+    events:
+      - s3:
+          bucket: ${self:custom.bucket_data}
+          event: s3:ObjectCreated:*
+          rules:
+            - prefix: ${self:custom.key_stg_newcomers}
+            - suffix: .json
+    environment:
+      TWITTER_TOKEN: twitter_token
+      COINMARKETCAP_TOKEN: coinmarketcap_token
+    timeout: 900
   backfill_newcomers:
     handler: serverless_crypto_analysis/lambda_function/backfill_newcomers.lambda_handler
     environment:

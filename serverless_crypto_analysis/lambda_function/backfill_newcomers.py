@@ -3,6 +3,7 @@ import os
 import json
 import awswrangler as wr
 import boto3
+import time
 
 # init clients
 lambda_client = boto3.client("lambda")
@@ -35,6 +36,7 @@ def trigger_lambda(uuid):
         InvocationType="Event",
         Payload=json.dumps({"uuid": uuid})
     )
+    time.sleep(0.5)
     print(response)
 
 

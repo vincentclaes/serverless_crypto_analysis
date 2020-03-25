@@ -16,10 +16,10 @@ def lambda_handler(event, context):
     json_object = json.loads(s3_object)
 
     # do transformation
-    df = pd.DataFrame(json_object.get("data"), columns=["name", "cmc_rank"])
-    df["id"] = df["name"]
+    df = pd.DataFrame(json_object.get("data"), columns=["slug", "cmc_rank"])
+    df["id"] = df["slug"]
     df["rank"] = df["cmc_rank"]
-    del df["name"]
+    del df["slug"]
     del df["cmc_rank"]
     df["uuid"] = get_uuid_from_key(source_key)
     df["partition"] = 1
