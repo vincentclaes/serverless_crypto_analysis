@@ -63,6 +63,13 @@ class TestTweets(unittest.TestCase):
             context=None,
         )
 
+    def test_skip_tweet_raises_no_error(self) -> None:
+        os.environ["SKIPTWEET"] = "True"
+        tweets.lambda_handler(
+            event=TestTweets.build_event(bucket=TestTweets.bucket, key=TestTweets.key),
+            context=None,
+        )
+
     @staticmethod
     def build_coinmarket_response():
         return {
