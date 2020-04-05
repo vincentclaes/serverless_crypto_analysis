@@ -47,6 +47,9 @@ functions:
     environment:
       DESTINATION_BUCKET: ${self:custom.bucket_data}
       DESTINATION_KEY: raw
+    timeout: 2
+    memorySize: 128
+
   filter_for_newcomers:
     handler: serverless_crypto_analysis/lambda_function/filter_for_newcomers.lambda_handler
     events:
@@ -59,6 +62,8 @@ functions:
     environment:
       DESTINATION_BUCKET: ${self:custom.bucket_data}
       DESTINATION_KEY: ${self:custom.key_stg_filter_for_newcomers}
+    timeout: 2
+    memorySize: 256
     layers:
       # we reference the version that is manually uploaded
       - arn:aws:lambda:eu-central-1:077590795309:layer:awswrangler:1
@@ -74,7 +79,9 @@ functions:
       KEY_DATA: ${self:custom.key_stg_newcomers}
       RANK: "[200,100,75,50,25,10]"
       LOOKBACK_PERIOD: 21600 # 6 hours
-    timeout: 900
+    timeout: 100
+    memorySize: 128
+
   tweet_newcomers:
     handler: serverless_crypto_analysis/lambda_function/tweets.lambda_handler
     events:
@@ -88,7 +95,9 @@ functions:
       TWITTER_TOKEN: twitter_token
       COINMARKETCAP_TOKEN: coinmarketcap_token
       SKIPTWEET: False
-    timeout: 900
+    timeout: 2
+    memorySize: 128
+
   backfill_newcomers:
     handler: serverless_crypto_analysis/lambda_function/backfill_newcomers.lambda_handler
     environment:
