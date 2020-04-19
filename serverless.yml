@@ -62,7 +62,7 @@ functions:
     environment:
       DESTINATION_BUCKET: ${self:custom.bucket_data}
       DESTINATION_KEY: ${self:custom.key_stg_filter_for_newcomers}
-    timeout: 120
+    timeout: 30
     memorySize: 1500
     layers:
       # we reference the version that is manually uploaded
