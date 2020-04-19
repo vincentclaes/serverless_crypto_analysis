@@ -62,11 +62,11 @@ functions:
     environment:
       DESTINATION_BUCKET: ${self:custom.bucket_data}
       DESTINATION_KEY: ${self:custom.key_stg_filter_for_newcomers}
-    timeout: 5
-    memorySize: 256
+    timeout: 120
+    memorySize: 1500
     layers:
       # we reference the version that is manually uploaded
-      - arn:aws:lambda:eu-central-1:077590795309:layer:awswrangler:1
+      - arn:aws:lambda:eu-central-1:077590795309:layer:awswrangler:2
 
   newcomers:
     handler: serverless_crypto_analysis/lambda_function/newcomers.lambda_handler
@@ -105,6 +105,8 @@ functions:
       ATHENA_TABLE: stg_filter_for_newcomers
       FUNCTION_NAME: ${self:custom.glue_newcomers}
       YEAR: 2020
+      MONTH: 4
+      DAY: 1
       LOOKBACK_PERIOD: 86400 # 24 hours
     timeout: 900
     layers:

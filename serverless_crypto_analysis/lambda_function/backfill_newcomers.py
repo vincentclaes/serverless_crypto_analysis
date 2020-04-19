@@ -16,9 +16,13 @@ def lambda_handler(event, context):
     df["time"] = df["uuid"].apply(lambda x: datetime.datetime.fromtimestamp(x).time())
     lookback_period = os.environ["LOOKBACK_PERIOD"]
     year = os.environ.get("YEAR")
+    month = os.environ.get("MONTH")
+    day = os.environ.get("DAY")
     if year:
         year = int(year)
-        df = df[df["date"] > datetime.date(year,1,1)]
+        month = int(month)
+        day = int(day)
+        df = df[df["date"] > datetime.date(year,month,day)]
     df = df.groupby("date")["uuid"].agg(time= max)
     df["uuid"] = df["time"]
     for uuid in df["uuid"].sort_values():

@@ -6,7 +6,7 @@ verify_ssl = true
 [dev-packages]
 requests = "==2.22.0"
 coinmarketcap = "==4.2.1"
-awswrangler= "==0.2.1"
+awswrangler= "==1.0.3"
 moto= "==1.3.14"
 isort = "==4.3.21"
 

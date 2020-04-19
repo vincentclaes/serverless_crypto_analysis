@@ -24,5 +24,7 @@ class TestNewcomers(unittest.TestCase):
             dir_path, "resources", "test_backfill_newcomers.csv"
         ))
         os.environ["YEAR"] = "2020"
+        os.environ["MONTH"] = "4"
+        os.environ["DAY"] = "1"
         os.environ["LOOKBACK_PERIOD"] = "86400"
         backfill_newcomers.lambda_handler(None, None)

@@ -1,7 +1,7 @@
 import os
 
 import boto3
-
+from loguru import logger
 
 def create_bucket(bucket_name):
     boto3.client("s3").create_bucket(Bucket=bucket_name)
@@ -12,6 +12,7 @@ def get_objects_in_bucket(bucket):
 
 
 def get_object_from_s3(bucket, key):
+    logger.info("get object from bucket {} and key {}".format(bucket, key))
     s3_object = (
         boto3.client("s3")
         .get_object(Bucket=bucket, Key=key)["Body"]
@@ -22,6 +23,7 @@ def get_object_from_s3(bucket, key):
 
 
 def put_s3_object(object_, destination_bucket, key):
+    logger.info("put object {} to bucket {} and key {}".format(object_, destination_bucket, key))
     boto3.client("s3").put_object(Body=object_, Bucket=destination_bucket, Key=key)
 
 
